@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net/http"
+	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -14,48 +17,180 @@ func main() {
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
-	const simple = `
+	u := os.Getenv("NEWTON_URL")
+	if u == "" {
+		u = "http://localhost:8080/api"
+	}
+
+	head := `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Binary String Form</title>
-</head>
-<body>
-  <form action="http://localhost:8080/api" method="POST">
+  <title>Exercises</title>
+  <style>
+    /* Just a bit of basic styling for clarity */
+    section {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    label {
+      display: inline-block;
+      width: 500px;
+      margin-right: 0.5rem;
+    }
+
+    input[type="text"] {
+      margin-bottom: 0.5rem;
+    }
+
+    .submit-btn {
+      margin-top: 0.5rem;
+      display: block;
+    }
+  </style>
+</head> <body>`
+
+	gap := `
+  <section>
+<h2> Given a string of 1s and 0s find the longest gap of 0s'</h2> 
+  <form action="` + u + `" method="POST">
     <label for="binaryInput">Enter a string of 0s and 1s:</label>
+<br> 
     <input
       type="text"
       id="gap"
       name="binaryString"
       pattern="[0-1]+"
-      required
+      
       placeholder="e.g. 001101"
     />
-  </form>
-<br>
-<form action="http://localhost:8080/api" method="POST">
     <button type="submit">Submit</button>
+</form>
+</section> `
+
+	rotate := `
+<section>
+<h2> Rotate an array by a key number</h2> 
+<form action="` + u + `" method="POST">
+
     <label for="binaryInput">Enter a comma seperated array of stings and an index</label>
+	<br> 
     <input
       type="text"
       id="1"
       name="rotate"
-      required
-      placeholder="e.g. 001101"
+      placeholder="e.g. a,b,c,d,e"
     />
 	<input
       type="number"
       id="2"
       name="key"
-      required
+      
     />
     <button type="submit">Submit</button>
+</section> `
 
+	odd := `
+  <section>
+<h2> Find the odd element in an array</h2> 
+  <form action="` + u + `" method="POST">
+
+    <label for="Numbers">Enter a list of numbers:</label>
+<br> 
+    <input
+      type="text"
+      id="1"
+      name="Numbers"
+      placeholder="0,1,2,3"
+    />
+    <button type="submit">Submit</button>
+</form>
+</section>`
+
+	missing := `
+<section>
+<h2> Find the missing element in an array</h2> 
+  <form action="` + u + `" method="POST">
+
+    <label for="Numbers">Enter a list of ranging for 1 to N+1 omit one number</label>
+<br> 
+    <input
+      type="text"
+      id="1"
+      name="missing"
+      placeholder="2,1,3,5"
+    />
+    <button type="submit">Submit</button>
+</form>
+</section> `
+
+	tape := ` 
+<section>
+<h2> Find the Equilibrium </h2> 
+  <form action="` + u + `" method="POST">
+
+    <label for="Numbers">Enter a list of numbers/label>
+<br> 
+    <input
+      type="text"
+      id="1"
+      name="tape"
+      placeholder="2,1,3,5"
+    />
+    <button type="submit">Submit</button>
+</form>
+</section> `
+
+	frog := `<section>
+<h2> Calculate the number of steps for a frog to cover Y </h2> 
+  <form action="` + u + `" method="POST">
+
+    <label for="Frog">Enter values for X, Y, D</label>
+<br> 
+    <input
+      type="number"
+      id="1"
+      name="frog-x"
+      placeholder="Vale for X"
+    />
+    <input
+      type="number"
+      id="1"
+      name="frog-d"
+      placeholder="Vale for D"
+    />
+    <input
+      type="number"
+      id="1"
+      name="frog-y"
+      placeholder="Value for Y"
+    />
+    <button type="submit">Submit</button>
+</form>
+</section>`
+
+	tail := `
 </body>
 </html>`
 
-	fmt.Fprint(w, simple)
+	var b string
+	b = head +
+		gap +
+		rotate +
+		odd +
+		frog +
+		missing +
+		tape +
+		tail
+	fmt.Fprint(w, b)
 }
 
 func api(w http.ResponseWriter, r *http.Request) {
@@ -66,13 +201,37 @@ func api(w http.ResponseWriter, r *http.Request) {
 	} else if r.Form.Get("rotate") != "" {
 		var j, _ = strconv.Atoi(r.Form.Get("key"))
 		b = rotate(r.Form.Get("rotate"), j)
+	} else if r.Form.Get("Numbers") != "" {
+		b = oddOne(r.Form.Get("Numbers"))
+	} else if r.Form.Get("frog-x") != "" {
+		var x, _ = strconv.Atoi(r.Form.Get("frog-x"))
+		var d, _ = strconv.Atoi(r.Form.Get("frog-d"))
+		var y, _ = strconv.Atoi(r.Form.Get("frog-y"))
+		b = frog(x, d, y)
+	} else if r.Form.Get("missing") != "" {
+
+		b = missing(r.Form.Get("missing"))
+	} else if r.Form.Get("tape") != "" {
+
+		b = tapeEquilibrium(r.Form.Get("tape"))
 	}
 	fmt.Fprint(w, b)
+}
+
+func frog(x int, d int, y int) string {
+	var result string
+	var c int = 0
+	for p := x; p < y; p = p + d {
+		c++
+	}
+	result = strconv.Itoa(c)
+	return result
 }
 
 func gap(val string) string {
 	const a = '1'
 	const b = '0'
+
 	var cur int
 	var max int
 	max = 0
@@ -89,8 +248,84 @@ func gap(val string) string {
 		}
 
 	}
+
 	return strconv.Itoa(max)
 
+}
+
+func missing(k string) string {
+	m := make(map[int]int)
+	var r string
+	var B []string = strings.Split(k, ",")
+	for i, v := range B {
+		k, _ := strconv.Atoi(v)
+		m[k] = i + 1
+	}
+	fmt.Println(m)
+	for j := 1; j <= len(B)+1; j++ {
+		if m[j] == 0 {
+			r = strconv.Itoa(j)
+		}
+	}
+	return r
+}
+
+func tapeEquilibrium(k string) string {
+	var B []string = strings.Split(k, ",")
+	m := make(map[int]int)
+	var r []int
+	var lhs = 0
+	var rhs = 0
+	for i, v := range B {
+		k, _ := strconv.Atoi(v)
+		m[i] = k
+	}
+	for j := 1; j < len(m); j++ {
+		for p := 0; p <= len(m); p++ {
+			if p < j {
+				lhs = lhs + m[p]
+			} else {
+				rhs = rhs + m[p]
+			}
+		}
+		r = append(r, int(math.Abs(float64(lhs-rhs))))
+		fmt.Println(math.Abs(float64(lhs - rhs)))
+		lhs = 0
+		rhs = 0
+	}
+
+	sort.Ints(r)
+
+	return "Equilibrium is " + strconv.Itoa(r[0])
+}
+
+func oddOne(k string) string {
+	var A []int
+	var r int
+	var B []string = strings.Split(k, ",")
+	for _, s := range B {
+		t, _ := strconv.Atoi(s)
+		A = append(A, t)
+	}
+	var l int = len(A)
+	for _, p := range A {
+		var c int = 0
+		fmt.Println(p)
+
+		for _, q := range A {
+			if p != q {
+				c = c + 1
+				fmt.Println("Add")
+				fmt.Println(c)
+			}
+
+		}
+		if c == (l - 1) {
+			fmt.Println("Number")
+			r = p
+		}
+	}
+	return strconv.Itoa(r)
 }
 
 func rotate(R string, k int) string {
@@ -99,6 +334,10 @@ func rotate(R string, k int) string {
 	A = strings.Split(R, ",")
 	B := make([]string, len(A))
 	l := len(A)
+	if k < 0 {
+		k = l - k
+	}
+	k = k % l
 	fmt.Println(k)
 	for i = 0; i < l; i++ {
 		fmt.Println(i)
