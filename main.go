@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -11,9 +12,22 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/newton.png", getNewton)
 	http.HandleFunc("/", simple)
 	http.HandleFunc("/api", api)
 	http.ListenAndServe(":8080", nil)
+}
+
+func getNewton(w http.ResponseWriter, r *http.Request) {
+	fileBytes, err := ioutil.ReadFile("newton.png")
+	if err != nil {
+		panic(err)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("JW", "Cool")
+	w.Write(fileBytes)
+	return
 }
 
 func simple(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +74,7 @@ func simple(w http.ResponseWriter, r *http.Request) {
 </head> <body>`
 
 	top := `
-	<h1> <img src="newton.png"> Project Newton </h1>  
+	<h1> <img src="newton.png" width="125"> Project Newton </h1>  
 	`
 	gap := `
   <section>
