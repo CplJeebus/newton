@@ -21,6 +21,7 @@ func simple(w http.ResponseWriter, r *http.Request) {
 	if u == "" {
 		u = "http://localhost:8080/api"
 	}
+	// bare := strings.ReplaceAll(u, "api", "")
 
 	head := `
 <!DOCTYPE html>
@@ -58,6 +59,9 @@ func simple(w http.ResponseWriter, r *http.Request) {
   </style>
 </head> <body>`
 
+	top := `
+	<h1> <img src="newton.png"> Project Newton </h1>  
+	`
 	gap := `
   <section>
 <h2> Given a string of 1s and 0s find the longest gap of 0s'</h2> 
@@ -183,6 +187,7 @@ func simple(w http.ResponseWriter, r *http.Request) {
 
 	var b string
 	b = head +
+		top +
 		gap +
 		rotate +
 		odd +
