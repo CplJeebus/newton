@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -10,6 +11,16 @@ import (
 	"strconv"
 	"strings"
 )
+
+type pair struct {
+	A int
+	B int
+}
+
+type genePair struct {
+	Name  string
+	Value int
+}
 
 func main() {
 	http.HandleFunc("/newton.png", getNewton)
@@ -25,7 +36,6 @@ func getNewton(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Header().Set("JW", "Cool")
 	w.Write(fileBytes)
 	return
 }
@@ -92,6 +102,26 @@ func simple(w http.ResponseWriter, r *http.Request) {
     />
     <button type="submit">Submit</button>
 </form>
+</section> `
+	frogTwo := `
+<section>
+<h2> Frog exercise</h2> 
+<form action="` + u + `" method="POST">
+
+    <label for="binaryInput">Enter a comma seperated array of ints and an key</label>
+	<br> 
+    <input
+      type="text"
+      id="1"
+      name="frogTwo"
+      placeholder="e.g. a,b,c,d,e"
+    />
+	<input
+      type="number"
+      id="2"
+      name="frogKey"
+    />
+    <button type="submit">Submit</button>
 </section> `
 
 	rotate := `
@@ -202,6 +232,7 @@ func simple(w http.ResponseWriter, r *http.Request) {
 	var b string
 	b = head +
 		top +
+		frogTwo +
 		gap +
 		rotate +
 		odd +
@@ -233,6 +264,9 @@ func api(w http.ResponseWriter, r *http.Request) {
 	} else if r.Form.Get("tape") != "" {
 
 		b = tapeEquilibrium(r.Form.Get("tape"))
+	} else if r.Form.Get("frogTwo") != "" {
+		var j, _ = strconv.Atoi(r.Form.Get("frogKey"))
+		b = frogTwo(r.Form.Get("frogTwo"), j)
 	}
 	fmt.Fprint(w, b)
 }
@@ -345,6 +379,42 @@ func oddOne(k string) string {
 		}
 	}
 	return strconv.Itoa(r)
+}
+
+func frogTwo(R string, k int) string {
+	//fmt.Println(R, k)
+	var A []string = strings.Split(R, ",")
+	m := make(map[int]int)
+	var n []string
+	for i, v := range A {
+		j, _ := strconv.Atoi(v)
+		m[i] = j - 1
+		n = append(n, "sink")
+	}
+	fmt.Println(m)
+	for j := 0; j <= len(m); j++ {
+		q := m[j]
+		if n[q] != "float" {
+			n[q] = "float"
+		}
+		fmt.Println(n)
+		y := 0
+		for r := 0; r <= len(m)-1; r++ {
+			if n[r] == "float" {
+				fmt.Println("Yay! " + strconv.Itoa(r))
+				y++
+				if y == k {
+					return strconv.Itoa(y)
+				}
+			} else {
+				fmt.Println("Sink! ")
+				y = 0
+			}
+
+		}
+	}
+	return "Hello"
+
 }
 
 func rotate(R string, k int) string {
