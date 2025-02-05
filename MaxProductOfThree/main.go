@@ -14,7 +14,7 @@ func main() {
 
 func Solution(A []int) int {
 	sort.Ints(A)
-	maxP := A[len(A)-2]*A[len(A)-1] - A[len(A)]
+	maxP := A[len(A)-2] * A[len(A)-1] * A[len(A)]
 	return maxP
 
 }
